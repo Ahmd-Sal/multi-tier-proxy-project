@@ -1,0 +1,27 @@
+services:
+ app-01:
+    build: ./backend
+    container_name: app-01
+    networks:
+      - internal-net
+    restart: unless-stopped
+
+ app-02:
+    build: ./backend
+    container_name: app-02
+    networks:
+      - internal-net
+    restart: unless-stopped
+
+ app-03:
+    build: ./backend
+    container_name: app-03
+    networks:
+      - internal-net
+    restart: unless-stopped
+
+networks:
+  internal-net:
+    driver: bridge
+  public-net:
+    driver: bridge
