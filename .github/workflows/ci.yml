@@ -1,0 +1,70 @@
+name: Go Backend & Infrastructure CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # Job 1: Test & Lint Go Microservice Code
+  go-quality-gate:
+    name: Go Test & Lint
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.5'
+          cache: false
+
+      - name: Install Dependencies
+        run: go mod download
+
+      - name: Run Go Vet (Static Analysis)
+        run: go vet ./...
+        
+        # TODO: add go test here
+
+
+  # Job 2: Multi-Stage Docker Build Validation
+  docker-build-check:
+    name: Validate Docker Build
+    needs: go-quality-gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Go Backend Container Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false  # Build test only, do not push to registry yet
+          tags: go-backend:test
+
+  # Job 3: Validate Docker Compose Configuration
+  compose-validation:
+    name: Validate Docker Compose Config
+    needs: docker-build-check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Validate Compose File Syntax
+        run: docker compose config --quiet
