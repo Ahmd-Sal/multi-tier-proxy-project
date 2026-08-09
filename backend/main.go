@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
-	"log"
 )
 
 func getRoot(w http.ResponseWriter, r *http.Request) {
@@ -22,14 +22,14 @@ func getRoot(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Container Hostname: %s\n", hostname)
 }
 
-func getHello(w http.ResponseWriter, r *http.Request) {
+func getHealth(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[%s] %s requested from %s", r.Method, r.URL.Path, r.RemoteAddr)
-	fmt.Fprintf(w, "This is the Hello endpoint /hello")
+	fmt.Fprintf(w, "This is the Health endpoint /health")
 }
 
 func main() {
 	http.HandleFunc("/", getRoot)
-	http.HandleFunc("/hello", getHello)
+	http.HandleFunc("/health", getHealth)
 
 	// Log when the server starts
 	log.Println("Server is running on port :80...")
