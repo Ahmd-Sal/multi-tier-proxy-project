@@ -11,6 +11,11 @@ func getRoot(w http.ResponseWriter, r *http.Request) {
 	// Log the request
 	log.Printf("[%s] %s requested from %s", r.Method, r.URL.Path, r.RemoteAddr)
 
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+
 	hostname, err := os.Hostname()
 	if err != nil {
 		log.Printf("Error retrieving hostname: %v", err)
@@ -25,6 +30,11 @@ func getRoot(w http.ResponseWriter, r *http.Request) {
 func getHealth(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[%s] %s requested from %s", r.Method, r.URL.Path, r.RemoteAddr)
 	fmt.Fprintf(w, "This is the Health endpoint /health")
+
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
 }
 
 func main() {
