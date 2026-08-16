@@ -5,9 +5,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync/atomic"
 )
 
 var instanceName string = os.Getenv("APP_INSTANCE_NAME")
+var hitCounter int64
 
 func getRoot(w http.ResponseWriter, r *http.Request) {
 
@@ -19,7 +21,9 @@ func getRoot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "hello from %s", instanceName)
+	newHit := atomic.AddInt64(&hitCounter, 1)
+
+	fmt.Fprintf(w, "hello from %s. Hit number %d", instanceName, newHit)
 }
 
 func getHealth(w http.ResponseWriter, r *http.Request) {
