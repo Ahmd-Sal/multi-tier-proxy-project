@@ -7,7 +7,10 @@ import (
 	"os"
 )
 
+var instanceName string = os.Getenv("APP_INSTANCE_NAME")
+
 func getRoot(w http.ResponseWriter, r *http.Request) {
+
 	// Log the request
 	log.Printf("[%s] %s requested from %s", r.Method, r.URL.Path, r.RemoteAddr)
 
@@ -16,15 +19,7 @@ func getRoot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hostname, err := os.Hostname()
-	if err != nil {
-		log.Printf("Error retrieving hostname: %v", err)
-		http.Error(w, "Unable to get hostname", http.StatusInternalServerError)
-		return
-	}
-
-	// Send the hostname back in the HTTP response
-	fmt.Fprintf(w, "Container Hostname: %s\n", hostname)
+	fmt.Fprintf(w, "hello from %s", instanceName)
 }
 
 func getHealth(w http.ResponseWriter, r *http.Request) {
