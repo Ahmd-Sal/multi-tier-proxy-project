@@ -5,6 +5,8 @@ services:
     networks:
       - internal-net
     restart: unless-stopped
+    environment:
+      - APP_INSTANCE_NAME=app-01
 
  app-02:
     build: ./backend
@@ -12,6 +14,8 @@ services:
     networks:
       - internal-net
     restart: unless-stopped
+    environment:
+      - APP_INSTANCE_NAME=app-02
 
  app-03:
     build: ./backend
@@ -19,6 +23,8 @@ services:
     networks:
       - internal-net
     restart: unless-stopped
+    environment:
+      - APP_INSTANCE_NAME=app-03
 
  nginx:
     image: nginx:alpine
