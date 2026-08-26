@@ -3,7 +3,7 @@ services:
     build: ./backend
     container_name: app-01
     networks:
-      - internal-net
+      - internal-net-01
     restart: unless-stopped
     environment:
       - APP_INSTANCE_NAME=app-01
@@ -12,7 +12,7 @@ services:
     build: ./backend
     container_name: app-02
     networks:
-      - internal-net
+      - internal-net-01
     restart: unless-stopped
     environment:
       - APP_INSTANCE_NAME=app-02
@@ -21,29 +21,74 @@ services:
     build: ./backend
     container_name: app-03
     networks:
-      - internal-net
+      - internal-net-01
     restart: unless-stopped
     environment:
       - APP_INSTANCE_NAME=app-03
+ app-04:
+    build: ./backend
+    container_name: app-04
+    networks:
+      - internal-net-02
+    restart: unless-stopped
+    environment:
+      - APP_INSTANCE_NAME=app-04
 
- nginx:
+ app-05:
+    build: ./backend
+    container_name: app-05
+    networks:
+      - internal-net-02
+    restart: unless-stopped
+    environment:
+      - APP_INSTANCE_NAME=app-05
+
+ app-06:
+    build: ./backend
+    container_name: app-06
+    networks:
+      - internal-net-02
+    restart: unless-stopped
+    environment:
+      - APP_INSTANCE_NAME=app-06
+
+ nginx-01:
     image: nginx:alpine
     container_name: internal-nginx-01
     restart: unless-stopped
     volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/nginx-conf-01/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - app-01
       - app-02
       - app-03
     networks:
-      - internal-net
+      - internal-net-01
       - public-net
     ports:
       - "8080:80"
 
+ nginx-02:
+    image: nginx:alpine
+    container_name: internal-nginx-02
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx-conf-02/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app-04
+      - app-05
+      - app-06
+    networks:
+      - internal-net-02
+      - public-net
+    ports:
+      - "8081:80"
+
 networks:
-  internal-net:
+  internal-net-01:
+    driver: bridge
+    internal: true
+  internal-net-02:
     driver: bridge
     internal: true
   public-net:
