@@ -84,6 +84,20 @@ services:
     ports:
       - "8081:80"
 
+ haproxy-lb-01:
+    image: haproxy:alpine
+    container_name: haproxy-lb-01
+    restart: unless-stopped
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      - nginx-01
+      - nginx-02
+    networks:
+      - public-net
+    ports:
+      - "8082:80"
+
 networks:
   internal-net-01:
     driver: bridge
