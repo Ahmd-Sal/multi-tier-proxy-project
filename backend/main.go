@@ -11,12 +11,12 @@ import (
 var instanceName string = os.Getenv("APP_INSTANCE_NAME")
 var hitCounter int64
 
-func getRoot(w http.ResponseWriter, r *http.Request) {
+func getApi(w http.ResponseWriter, r *http.Request) {
 
 	// Log the request
 	log.Printf("[%s] %s requested from %s", r.Method, r.URL.Path, r.RemoteAddr)
 
-	if r.URL.Path != "/" {
+	if r.URL.Path != "/api" && r.URL.Path != "/api/" {
 		http.NotFound(w, r)
 		return
 	}
@@ -27,13 +27,15 @@ func getRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func getHealth(w http.ResponseWriter, r *http.Request) {
-	
+
 	log.Printf("[%s] %s requested from %s", r.Method, r.URL.Path, r.RemoteAddr)
 	fmt.Fprintf(w, "This is the Health endpoint /health")
 }
 
 func main() {
-	http.HandleFunc("/", getRoot)
+
+	http.HandleFunc("/api", getApi)
+	http.HandleFunc("/api/", getApi)
 	http.HandleFunc("/health", getHealth)
 
 	// Log when the server starts
