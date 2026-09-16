@@ -36,7 +36,6 @@ jobs:
   # Job 2: Multi-Stage Docker Build Validation
   docker-build-check:
     name: Validate Docker Build
-    needs: go-quality-gate
     runs-on: ubuntu-latest
 
     steps:
@@ -57,7 +56,6 @@ jobs:
   # Job 3: Validate Docker Compose Configuration
   compose-validation:
     name: Validate Docker Compose Config
-    needs: docker-build-check
     runs-on: ubuntu-latest
 
     steps:
@@ -66,3 +64,44 @@ jobs:
 
       - name: Validate Compose File Syntax
         run: docker compose config --quiet
+
+  # Job 4: Verify Application Health
+  integration-test:
+    name: Smoke Test Application
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build and start services
+        run: docker compose up -d --build
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for app to respond..."
+          max_attempts=30
+          attempt=1
+          until curl --output /dev/null --silent --head --fail http://localhost:8082; do # the localhost port at the time of testing is 8082
+            if [[ "$attempt" -ge "$max_attempts" ]]; then
+              echo -e "\nTimed out waiting for services"
+              exit 1
+            fi
+
+            printf '.'
+            attempt="$((attempt + 1))"
+            sleep 2
+          done
+
+          echo -e "\nService is ready!"
+
+      - name: Run HTTP test
+        run: |
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/api)
+          echo "HTTP Status Code: $RESPONSE"
+          if [ "$RESPONSE" -ne 200 ]; then
+            echo -e "\nHealth check failed with status $RESPONSE"
+            exit 1
+          fi
+
+          echo -e "Curl test successfully returned 200 OK."
