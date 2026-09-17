@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions: 
+  contents: read
+
 jobs:
   # Job 1: Test & Lint Go Microservice Code
   go-quality-gate:
@@ -22,10 +25,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.26.5'
-          cache: false
-
-      - name: Install Dependencies
-        run: go mod download
+          cache: true
 
       - name: Run Go Vet (Static Analysis)
         run: go vet ./...
@@ -52,11 +52,14 @@ jobs:
           file: ./backend/Dockerfile
           push: false  # Build test only, do not push to registry yet
           tags: go-backend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-  # Job 3: Validate Docker Compose Configuration
-  compose-validation:
-    name: Validate Docker Compose Config
+  # Job 3: Validate Docker Compose Configuration and Verify Application Health
+  integration-test:
+    name: Smoke Test Application
     runs-on: ubuntu-latest
+    needs: [go-quality-gate, docker-build-check]
 
     steps:
       - name: Checkout Code
@@ -64,15 +67,6 @@ jobs:
 
       - name: Validate Compose File Syntax
         run: docker compose config --quiet
-
-  # Job 4: Verify Application Health
-  integration-test:
-    name: Smoke Test Application
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
 
       - name: Build and start services
         run: docker compose up -d --build
@@ -105,3 +99,7 @@ jobs:
           fi
 
           echo -e "Curl test successfully returned 200 OK."
+
+      - name: Output Container Logs on Failure
+        if: failure()
+        run: docker compose logs
